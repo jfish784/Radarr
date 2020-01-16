@@ -41,7 +41,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                     file.Movie = subject.Movie;
                     var customFormats = _formatService.ParseCustomFormat(file);
                     var cutoff = new List<CustomFormat> { profile.FormatItems.Single(x => x.Format.Id == profile.FormatCutoff).Format };
-                    var result = new QualityModelComparer(profile).Compare(cutoff, customFormats);
+                    var result = new CustomFormatsComparer(profile).Compare(cutoff, customFormats);
                     if (result >= 0)
                     {
                         _logger.Debug("Existing custom formats {0} meet cutoff: {1}",

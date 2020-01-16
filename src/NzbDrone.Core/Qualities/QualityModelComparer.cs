@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using NzbDrone.Common.EnsureThat;
-using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Profiles;
 
 namespace NzbDrone.Core.Qualities
 {
-    public class QualityModelComparer : IComparer<Quality>, IComparer<QualityModel>, IComparer<List<CustomFormat>>
+    public class QualityModelComparer : IComparer<Quality>, IComparer<QualityModel>
     {
         private readonly Profile _profile;
 
@@ -55,25 +52,6 @@ namespace NzbDrone.Core.Qualities
             }
 
             return result;
-        }
-
-        public int Compare(List<CustomFormat> left, List<CustomFormat> right)
-        {
-            var leftIndicies = GetIndicies(left, _profile);
-            var rightIndicies = GetIndicies(right, _profile);
-
-            // Summing powers of two ensures last format always trumps, but we order correctly if we
-            // have extra formats lower down the list
-            var leftTotal = leftIndicies.Select(x => Math.Pow(2, x)).Sum();
-            var rightTotal = rightIndicies.Select(x => Math.Pow(2, x)).Sum();
-
-            return leftTotal.CompareTo(rightTotal);
-        }
-
-        public static List<int> GetIndicies(List<CustomFormat> formats, Profile profile)
-        {
-            var allFormats = formats.Any() ? formats : new List<CustomFormat> { CustomFormat.None };
-            return allFormats.Select(f => profile.FormatItems.FindIndex(v => Equals(v.Format, f))).ToList();
         }
     }
 }

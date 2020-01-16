@@ -52,7 +52,8 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                 return true;
             }
 
-            var customFormatCompare = qualityComparer.Compare(currentCustomFormats, newCustomFormats);
+            var customFormatCompare = new CustomFormatsComparer(profile).Compare(currentCustomFormats, newCustomFormats);
+
             if (customFormatCompare <= 0)
             {
                 _logger.Debug("Existing item has a better custom format score, skipping");
