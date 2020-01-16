@@ -12,6 +12,7 @@ using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.SignalR;
+using Radarr.Api.V3.CustomFormats;
 using Radarr.Http;
 using Radarr.Http.Extensions;
 using BadRequestException = Radarr.Http.REST.BadRequestException;
@@ -61,7 +62,7 @@ namespace Radarr.Api.V3.MovieFiles
             movieFile.Movie = movie;
 
             var resource = movieFile.ToResource(movie, _qualityUpgradableSpecification);
-            resource.CustomFormats = _formatCalculator.ParseCustomFormat(movieFile);
+            resource.CustomFormats = _formatCalculator.ParseCustomFormat(movieFile).ToResource();
             return resource;
         }
 
@@ -88,7 +89,7 @@ namespace Radarr.Api.V3.MovieFiles
 
                 var resource = file.ToResource(movie, _qualityUpgradableSpecification);
                 file.Movie = movie;
-                resource.CustomFormats = _formatCalculator.ParseCustomFormat(file);
+                resource.CustomFormats = _formatCalculator.ParseCustomFormat(file).ToResource();
 
                 return new List<MovieFileResource> { resource };
             }

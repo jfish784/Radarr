@@ -6,7 +6,7 @@ using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Parser;
 using Radarr.Http;
 
-namespace Radarr.Api.V3.Qualities
+namespace Radarr.Api.V3.CustomFormats
 {
     public class CustomFormatModule : RadarrRestModule<CustomFormatResource>
     {

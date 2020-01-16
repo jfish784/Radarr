@@ -3,7 +3,7 @@ using System.Linq;
 using FluentValidation.Validators;
 using NzbDrone.Core.CustomFormats;
 
-namespace Radarr.Api.V3.Qualities
+namespace Radarr.Api.V3.CustomFormats
 {
     public class FormatTagValidator : PropertyValidator
     {

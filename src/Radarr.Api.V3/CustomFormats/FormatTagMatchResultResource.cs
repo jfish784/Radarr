@@ -4,7 +4,7 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.CustomFormats;
 using Radarr.Http.REST;
 
-namespace Radarr.Api.V3.Qualities
+namespace Radarr.Api.V3.CustomFormats
 {
     public class CustomFormatMatchResultResource : RestResource
     {

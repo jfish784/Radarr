@@ -17,7 +17,12 @@ namespace NzbDrone.Core.CustomFormats
             FormatTags = tags.Select(t => new FormatTag(t)).ToList();
         }
 
-        public static CustomFormat None => new CustomFormat("None");
+        public static CustomFormat None => new CustomFormat
+        {
+            Id = 0,
+            Name = "None",
+            FormatTags = new List<FormatTag>()
+        };
 
         public string Name { get; set; }
 
