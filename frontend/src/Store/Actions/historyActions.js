@@ -53,7 +53,7 @@ export const defaultState = {
     },
     {
       name: 'customFormats',
-      label: 'Custom Formats',
+      label: 'Formats',
       isSortable: false,
       isVisible: true
     },

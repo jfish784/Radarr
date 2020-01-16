@@ -82,8 +82,8 @@ export const defaultState = {
       },
       {
         name: 'customFormats',
-        label: 'Custom Formats',
-        isSortable: true,
+        label: 'Formats',
+        isSortable: false,
         isVisible: true
       },
       {
