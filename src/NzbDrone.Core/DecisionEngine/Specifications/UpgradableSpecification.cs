@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NLog;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.CustomFormats;
@@ -10,7 +11,8 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     public interface IUpgradableSpecification
     {
         bool IsUpgradable(Profile profile, QualityModel currentQuality, List<CustomFormat> currentCustomFormats, QualityModel newQuality, List<CustomFormat> newCustomFormats);
-        bool CutoffNotMet(Profile profile, QualityModel currentQuality, QualityModel newQuality = null);
+        bool CutoffNotMet(Profile profile, QualityModel currentQuality, List<CustomFormat> currentFormats, QualityModel newQuality = null);
+        bool QualityCutoffNotMet(Profile profile, QualityModel currentQuality, QualityModel newQuality = null);
         bool IsRevisionUpgrade(QualityModel currentQuality, QualityModel newQuality);
         bool IsUpgradeAllowed(Profile qualityProfile, QualityModel currentQuality, QualityModel newQuality);
     }
@@ -64,7 +66,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             return true;
         }
 
-        public bool CutoffNotMet(Profile profile, QualityModel currentQuality, QualityModel newQuality = null)
+        public bool QualityCutoffNotMet(Profile profile, QualityModel currentQuality, QualityModel newQuality = null)
         {
             var cutoffCompare = new QualityModelComparer(profile).Compare(currentQuality.Quality.Id, profile.Cutoff);
 
@@ -79,6 +81,24 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             }
 
             return false;
+        }
+
+        private bool CustomFormatCutoffNotMet(Profile profile, List<CustomFormat> currentFormats)
+        {
+            var cutoff = new List<CustomFormat> { profile.FormatItems.Single(x => x.Format.Id == profile.FormatCutoff).Format };
+            var cutoffCompare = new CustomFormatsComparer(profile).Compare(currentFormats, cutoff);
+
+            if (cutoffCompare < 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool CutoffNotMet(Profile profile, QualityModel currentQuality, List<CustomFormat> currentFormats, QualityModel newQuality = null)
+        {
+            return QualityCutoffNotMet(profile, currentQuality, newQuality) || CustomFormatCutoffNotMet(profile, currentFormats);
         }
 
         public bool IsRevisionUpgrade(QualityModel currentQuality, QualityModel newQuality)

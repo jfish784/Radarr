@@ -96,7 +96,7 @@ namespace Radarr.Api.V3.MovieFiles
                 Quality = model.Quality,
                 Languages = model.Languages,
                 MediaInfo = model.MediaInfo.ToResource(model.SceneName),
-                QualityCutoffNotMet = upgradableSpecification.CutoffNotMet(movie.Profile, model.Quality)
+                QualityCutoffNotMet = upgradableSpecification.QualityCutoffNotMet(movie.Profile, model.Quality)
             };
         }
     }

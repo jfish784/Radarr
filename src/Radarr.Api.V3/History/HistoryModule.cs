@@ -57,7 +57,7 @@ namespace Radarr.Api.V3.History
 
             if (model.Movie != null)
             {
-                resource.QualityCutoffNotMet = _upgradableSpecification.CutoffNotMet(model.Movie.Profile, model.Quality);
+                resource.QualityCutoffNotMet = _upgradableSpecification.QualityCutoffNotMet(model.Movie.Profile, model.Quality);
             }
 
             return resource;
