@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Dapper;
 using FluentMigrator;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Datastore.Converters;
 using NzbDrone.Core.Datastore.Migration.Framework;
+using NzbDrone.Core.Languages;
 using NzbDrone.Core.Parser.Model;
 
 namespace NzbDrone.Core.Datastore.Migration
@@ -19,8 +21,11 @@ namespace NzbDrone.Core.Datastore.Migration
             Alter.Table("Blacklist").AddColumn("IndexerFlags").AsInt32().WithDefaultValue(0);
             Alter.Table("MovieFiles").AddColumn("IndexerFlags").AsInt32().WithDefaultValue(0);
 
+            // Switch Quality and Language to int in pending releases, remove custom formats
+            Execute.WithConnection(FixPendingReleases);
+
             // Remove Custom Formats from QualityModel
-            SqlMapper.AddTypeHandler(new EmbeddedDocumentConverter<QualityModel164>());
+            SqlMapper.AddTypeHandler(new EmbeddedDocumentConverter<QualityModel165>());
             Execute.WithConnection((conn, tran) => RemoveCustomFormatFromQuality(conn, tran, "Blacklist"));
             Execute.WithConnection((conn, tran) => RemoveCustomFormatFromQuality(conn, tran, "History"));
             Execute.WithConnection((conn, tran) => RemoveCustomFormatFromQuality(conn, tran, "MovieFiles"));
@@ -28,6 +33,52 @@ namespace NzbDrone.Core.Datastore.Migration
             // Fish out indexer flags from history
             Execute.WithConnection(AddIndexerFlagsToBlacklist);
             Execute.WithConnection(AddIndexerFlagsToMovieFiles);
+        }
+
+        private  void FixPendingReleases(IDbConnection conn, IDbTransaction tran)
+        {
+            SqlMapper.AddTypeHandler(new EmbeddedDocumentConverter<ParsedMovieInfo164>());
+            SqlMapper.AddTypeHandler(new EmbeddedDocumentConverter<ParsedMovieInfo165>());
+            var rows = conn.Query<ParsedMovieInfoData164>("SELECT Id, ParsedMovieInfo from PendingReleases");
+
+            var newRows = new List<ParsedMovieInfoData165>();
+
+            foreach (var row in rows)
+            {
+                var old = row.ParsedMovieInfo;
+
+                var newQuality = new QualityModel165
+                {
+                    Quality = old.Quality.Quality.Id,
+                    Revision = old.Quality.Revision,
+                    HardcodedSubs = old.Quality.HardcodedSubs
+                };
+
+                var languages = old.Languages.Select(x => (Language)x).Select(x => x.Id).ToList();
+
+                var correct = new ParsedMovieInfo165
+                {
+                    MovieTitle = old.MovieTitle,
+                    SimpleReleaseTitle = old.SimpleReleaseTitle,
+                    Quality = newQuality,
+                    Languages = languages,
+                    ReleaseGroup = old.ReleaseGroup,
+                    ReleaseHash = old.ReleaseHash,
+                    Edition = old.Edition,
+                    Year = old.Year,
+                    ImdbId = old.ImdbId
+                };
+
+                newRows.Add(new ParsedMovieInfoData165
+                {
+                    Id = row.Id,
+                    ParsedMovieInfo = correct
+                });
+            }
+
+            var sql = $"UPDATE PendingReleases SET ParsedMovieInfo = @ParsedMovieInfo WHERE Id = @Id";
+
+            conn.Execute(sql, rows, transaction: tran);
         }
 
         private void RemoveCustomFormatFromQuality(IDbConnection conn, IDbTransaction tran, string table)
@@ -101,6 +152,54 @@ namespace NzbDrone.Core.Datastore.Migration
             conn.Execute(updateSql, toUpdate, transaction: tran);
         }
 
+        private class ParsedMovieInfoData164 : ModelBase
+        {
+            public ParsedMovieInfo164 ParsedMovieInfo { get; set; }
+        }
+
+        private class ParsedMovieInfo164
+        {
+            public string MovieTitle { get; set; }
+            public string SimpleReleaseTitle { get; set; }
+            public QualityModel164 Quality { get; set; }
+            public List<string> Languages { get; set; }
+            public string ReleaseGroup { get; set; }
+            public string ReleaseHash { get; set; }
+            public string Edition { get; set; }
+            public int Year { get; set; }
+            public string ImdbId { get; set; }
+        }
+
+        private class QualityModel164
+        {
+            public Quality164 Quality { get; set; }
+            public Revision165 Revision { get; set; }
+            public string HardcodedSubs { get; set; }
+        }
+
+        private class Quality164
+        {
+            public int Id { get; set; }
+        }
+
+        private class ParsedMovieInfoData165 : ModelBase
+        {
+            public ParsedMovieInfo165 ParsedMovieInfo { get; set; }
+        }
+
+        private class ParsedMovieInfo165
+        {
+            public string MovieTitle { get; set; }
+            public string SimpleReleaseTitle { get; set; }
+            public QualityModel165 Quality { get; set; }
+            public List<int> Languages { get; set; }
+            public string ReleaseGroup { get; set; }
+            public string ReleaseHash { get; set; }
+            public string Edition { get; set; }
+            public int Year { get; set; }
+            public string ImdbId { get; set; }
+        }
+
         private class BlacklistData : ModelBase
         {
             public string TorrentInfoHash { get; set; }
@@ -121,17 +220,17 @@ namespace NzbDrone.Core.Datastore.Migration
 
         private class QualityRow : ModelBase
         {
-            public QualityModel164 Quality { get; set; }
+            public QualityModel165 Quality { get; set; }
         }
 
-        private class QualityModel164
+        private class QualityModel165
         {
             public int Quality { get; set; }
-            public Revision164 Revision { get; set; }
+            public Revision165 Revision { get; set; }
             public string HardcodedSubs { get; set; }
         }
 
-        private class Revision164
+        private class Revision165
         {
             public int Version { get; set; }
             public int Real { get; set; }
