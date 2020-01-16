@@ -7,6 +7,7 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
+using NzbDrone.Core.Qualities;
 
 namespace NzbDrone.Core.CustomFormats
 {
@@ -308,29 +309,5 @@ namespace NzbDrone.Core.CustomFormats
         Regex = 1,
         Not = 2, // Do not match
         AbsolutelyRequired = 4
-    }
-
-    public enum Source
-    {
-        UNKNOWN = 0,
-        CAM,
-        TELESYNC,
-        TELECINE,
-        WORKPRINT,
-        DVD,
-        TV,
-        WEBDL,
-        WEBRIP,
-        BLURAY
-    }
-
-    public enum Modifier
-    {
-        NONE = 0,
-        REGIONAL,
-        SCREENER,
-        RAWHD,
-        BRDISK,
-        REMUX
     }
 }
